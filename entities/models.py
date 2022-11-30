@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 # Create your models here.
 class Category(models.Model):
@@ -6,7 +7,7 @@ class Category(models.Model):
 
     class Meta:
         verbose_name_plural = "Categories"
-        
+
     def __str__(self):
         return self.name
 
@@ -47,6 +48,8 @@ class Entity(models.Model):
 
 class Hero(Entity):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    headshot = models.ImageField(null=True, blank=True, upload_to="hero_headshots/")
+    added_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
 
     is_immortal = models.BooleanField(default=True)
 
@@ -66,14 +69,21 @@ class Hero(Entity):
     spouse = models.ForeignKey(
         "self", related_name="+", null=True, blank=True, on_delete=models.SET_NULL
     )
-    
+
     class Meta:
         verbose_name_plural = "Heroes"
-    
+
+
+# add a model twice to Django admin
+class HeroProxy(Hero):
+
+    class Meta:
+        proxy = True
 
 
 class Villain(Entity):
     is_immortal = models.BooleanField(default=False)
+    is_unique = models.BooleanField(default=True)
 
     malevolence_factor = models.PositiveSmallIntegerField(
         help_text="How malevolent this villain is?"
